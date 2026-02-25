@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Wallet, ArrowRight, Lock, Mail } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -9,13 +9,14 @@ const Login = () => {
     const [error, setError] = useState('');
     const [illustrations, setIllustrations] = useState([]);
     const [currentIllustration, setCurrentIllustration] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Simulating Axios fetch for animations
         const fetchIllustrations = async () => {
             try {
-                const response = await axios.get('/illustrations/assets.json');
+                // Using standard fetch/axios with relative path is fine for public folder
+                const response = await api.get('../illustrations/assets.json');
                 setIllustrations(response.data);
             } catch (err) {
                 console.error("Failed to fetch illustrations", err);
@@ -31,8 +32,10 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError('');
         try {
-            const response = await axios.post('http://localhost:8000/api/token/', {
+            const response = await api.post('token/', {
                 username,
                 password,
             });
@@ -41,6 +44,8 @@ const Login = () => {
             navigate('/dashboard');
         } catch (err) {
             setError('Invalid credentials');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -111,9 +116,19 @@ const Login = () => {
                             <div>
                                 <button
                                     type="submit"
-                                    className="w-full flex justify-center items-center gap-2 py-4 px-4 border border-transparent rounded-2xl shadow-xl text-md font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
+                                    disabled={isLoading}
+                                    className="w-full flex justify-center items-center gap-2 py-4 px-4 border border-transparent rounded-2xl shadow-xl text-md font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Sign in <ArrowRight className="h-5 w-5" />
+                                    {isLoading ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                            Signing in...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Sign in <ArrowRight className="h-5 w-5" />
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>

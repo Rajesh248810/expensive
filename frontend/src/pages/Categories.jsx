@@ -6,6 +6,7 @@ const Categories = () => {
     const [categories, setCategories] = useState([]);
     const [newCategory, setNewCategory] = useState('');
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchCategories();
@@ -26,23 +27,28 @@ const Categories = () => {
         e.preventDefault();
         if (!newCategory.trim()) return;
 
+        setIsSubmitting(true);
         try {
-            const response = await api.post('categories/', { name: newCategory });
-            setCategories([...categories, response.data]);
+            await api.post('categories/', { name: newCategory });
             setNewCategory('');
+            await fetchCategories();
         } catch (error) {
             console.error('Error adding category:', error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDeleteCategory = async (id) => {
         if (!window.confirm('Are you sure you want to delete this category?')) return;
 
+        setLoading(true);
         try {
             await api.delete(`categories/${id}/`);
-            setCategories(categories.filter(c => c.id !== id));
+            await fetchCategories();
         } catch (error) {
             console.error('Error deleting category:', error);
+            setLoading(false);
         }
     };
 
@@ -74,10 +80,19 @@ const Categories = () => {
                     />
                     <button
                         type="submit"
-                        disabled={!newCategory.trim()}
+                        disabled={!newCategory.trim() || isSubmitting}
                         className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md font-medium"
                     >
-                        <Plus className="h-5 w-5" /> Add
+                        {isSubmitting ? (
+                            <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                Adding...
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="h-5 w-5" /> Add
+                            </>
+                        )}
                     </button>
                 </form>
             </div>

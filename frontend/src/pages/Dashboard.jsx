@@ -50,7 +50,7 @@ const Dashboard = () => {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-sm font-medium text-gray-500 mb-1">Total Balance</p>
-                            <h3 className="text-3xl font-bold text-gray-900">${summary?.balance?.toFixed(2) || '0.00'}</h3>
+                            <h3 className="text-3xl font-bold text-gray-900">${Number(summary?.balance || 0).toFixed(2)}</h3>
                         </div>
                         <div className="p-3 bg-indigo-50 rounded-xl">
                             <DollarSign className="h-6 w-6 text-indigo-600" />
@@ -63,7 +63,7 @@ const Dashboard = () => {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-sm font-medium text-gray-500 mb-1">Total Income</p>
-                            <h3 className="text-3xl font-bold text-emerald-600">+${summary?.total_income?.toFixed(2) || '0.00'}</h3>
+                            <h3 className="text-3xl font-bold text-emerald-600">+${Number(summary?.total_income || 0).toFixed(2)}</h3>
                         </div>
                         <div className="p-3 bg-emerald-50 rounded-xl">
                             <TrendingUp className="h-6 w-6 text-emerald-600" />
@@ -76,7 +76,7 @@ const Dashboard = () => {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-sm font-medium text-gray-500 mb-1">Total Expenses</p>
-                            <h3 className="text-3xl font-bold text-red-600">-${summary?.total_expense?.toFixed(2) || '0.00'}</h3>
+                            <h3 className="text-3xl font-bold text-red-600">-${Number(summary?.total_expense || 0).toFixed(2)}</h3>
                         </div>
                         <div className="p-3 bg-red-50 rounded-xl">
                             <TrendingDown className="h-6 w-6 text-red-600" />

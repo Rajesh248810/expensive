@@ -17,6 +17,7 @@ const Transactions = () => {
         description: '',
         date: new Date().toISOString().split('T')[0]
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -65,6 +66,7 @@ const Transactions = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             if (editingId) {
                 await api.put(`transactions/${editingId}/`, formData);
@@ -72,19 +74,23 @@ const Transactions = () => {
                 await api.post('transactions/', formData);
             }
             setIsModalOpen(false);
-            fetchData();
+            await fetchData();
         } catch (error) {
             console.error('Error saving transaction:', error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this transaction?')) return;
+        setLoading(true);
         try {
             await api.delete(`transactions/${id}/`);
-            setTransactions(transactions.filter(t => t.id !== id));
+            await fetchData();
         } catch (error) {
             console.error('Error deleting transaction:', error);
+            setLoading(false);
         }
     };
 
@@ -274,9 +280,17 @@ const Transactions = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow-md font-medium"
+                                    disabled={isSubmitting}
+                                    className="flex-1 bg-indigo-600 text-white px-4 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    {editingId ? 'Save Changes' : 'Add Transaction'}
+                                    {isSubmitting ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                            {editingId ? 'Saving...' : 'Adding...'}
+                                        </>
+                                    ) : (
+                                        editingId ? 'Save Changes' : 'Add Transaction'
+                                    )}
                                 </button>
                             </div>
                         </form>

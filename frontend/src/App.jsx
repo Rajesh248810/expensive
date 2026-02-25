@@ -7,9 +7,37 @@ import Categories from './pages/Categories';
 import Landing from './pages/Landing';
 import Layout from './components/Layout';
 
-const PrivateRoute = ({ children }) => {
+const isAuthenticated = () => {
   const token = localStorage.getItem('access_token');
-  return token ? children : <Navigate to="/login" />;
+  if (!token) return false;
+
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return false;
+
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    const { exp } = JSON.parse(jsonPayload);
+    if (exp * 1000 < Date.now()) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+const PrivateRoute = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" />;
+};
+
+const PublicRoute = ({ children }) => {
+  return isAuthenticated() ? <Navigate to="/dashboard" /> : children;
 };
 
 function App() {
@@ -17,8 +45,16 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } />
+        <Route path="/register" element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        } />
 
         <Route path="/" element={
           <PrivateRoute>

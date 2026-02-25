@@ -2,6 +2,24 @@ import { Link } from 'react-router-dom';
 import { Wallet, ArrowRight, BarChart3, ShieldCheck, Zap, Receipt } from 'lucide-react';
 
 const Landing = () => {
+    const isAuthenticated = () => {
+        const token = localStorage.getItem('access_token');
+        if (!token) return false;
+
+        try {
+            const base64Url = token.split('.')[1];
+            if (!base64Url) return false;
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+            const { exp } = JSON.parse(jsonPayload);
+            return exp * 1000 > Date.now();
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const isAuth = isAuthenticated();
+
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900">
             {/* Navigation */}
@@ -13,15 +31,26 @@ const Landing = () => {
                     <span className="text-xl font-bold tracking-tight text-gray-900">ExpenseFlow</span>
                 </div>
                 <div className="flex items-center gap-6">
-                    <Link to="/login" className="text-sm font-semibold text-gray-600 hover:text-indigo-600 transition-colors">
-                        Log in
-                    </Link>
-                    <Link
-                        to="/register"
-                        className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-                    >
-                        Get Started
-                    </Link>
+                    {isAuth ? (
+                        <Link
+                            to="/dashboard"
+                            className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                        >
+                            Dashboard
+                        </Link>
+                    ) : (
+                        <>
+                            <Link to="/login" className="text-sm font-semibold text-gray-600 hover:text-indigo-600 transition-colors">
+                                Log in
+                            </Link>
+                            <Link
+                                to="/register"
+                                className="bg-indigo-600 text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                            >
+                                Get Started
+                            </Link>
+                        </>
+                    )}
                 </div>
             </nav>
 
@@ -39,12 +68,21 @@ const Landing = () => {
                         Take control of your money with ExpenseFlow. Track every penny, set smart budgets, and visualize your financial future with our industry-leading analytics.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
-                        <Link
-                            to="/register"
-                            className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 group"
-                        >
-                            Start Tracking Free <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </Link>
+                        {isAuth ? (
+                            <Link
+                                to="/dashboard"
+                                className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 group"
+                            >
+                                Go to Dashboard <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/register"
+                                className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl text-lg font-bold hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 group"
+                            >
+                                Start Tracking Free <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        )}
                     </div>
                     <div className="flex items-center gap-6 pt-8 justify-center lg:justify-start text-gray-400">
                         <div className="flex items-center gap-2">

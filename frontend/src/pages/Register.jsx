@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Wallet, ArrowRight, Lock, Mail, User } from 'lucide-react';
-import axios from 'axios';
+import api from '../api';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -10,12 +10,13 @@ const Register = () => {
     const [error, setError] = useState('');
     const [illustrations, setIllustrations] = useState([]);
     const [currentIllustration, setCurrentIllustration] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchIllustrations = async () => {
             try {
-                const response = await axios.get('/illustrations/assets.json');
+                const response = await api.get('../illustrations/assets.json');
                 setIllustrations(response.data);
             } catch (err) {
                 console.error("Failed to fetch illustrations", err);
@@ -31,8 +32,10 @@ const Register = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError('');
         try {
-            await axios.post('http://localhost:8000/api/user/register/', {
+            await api.post('user/register/', {
                 username,
                 email,
                 password,
@@ -40,6 +43,8 @@ const Register = () => {
             navigate('/login');
         } catch (err) {
             setError('Registration failed. Username might already exist.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -128,9 +133,19 @@ const Register = () => {
                             <div>
                                 <button
                                     type="submit"
-                                    className="w-full flex justify-center items-center gap-2 py-4 px-4 border border-transparent rounded-2xl shadow-xl text-md font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
+                                    disabled={isLoading}
+                                    className="w-full flex justify-center items-center gap-2 py-4 px-4 border border-transparent rounded-2xl shadow-xl text-md font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Create Account <ArrowRight className="h-5 w-5" />
+                                    {isLoading ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                            Creating Account...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Create Account <ArrowRight className="h-5 w-5" />
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>
