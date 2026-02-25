@@ -87,3 +87,6 @@ expense tracker/
 
 ## 🔒 Security Note
 The application uses the `cryptography` library to encrypt transaction descriptions. Ensure your `ENCRYPTION_KEY` is kept secure and never committed to version control.
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
